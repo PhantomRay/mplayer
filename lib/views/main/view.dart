@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:player/components/water_ripple.dart';
 import 'package:player/models/music_model.dart';
+import 'package:player/services/route_animation.dart';
+import 'package:player/views/detail/page.dart';
 import 'action.dart';
 import 'state.dart';
 
@@ -16,6 +18,12 @@ Widget buildView(MainPageState state, Dispatch dispatch, ViewService viewService
     image = Container(width: 60, height: 60, child: image);
 
     Widget title = Text(model.title, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal));
+    title = GestureDetector(
+      onTap: () {
+        Navigator.of(viewService.context).push(PopUpRoute(DetailPage().buildPage(null)));
+      },
+      child: title,
+    );
 
     Widget nextBtn = Icon(Icons.fast_forward);
 
