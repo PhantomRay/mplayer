@@ -9,6 +9,7 @@ enum MainPageAction {
   play,
   stop,
   progress,
+  reveive,
 }
 
 class MainPageActionCreator {
@@ -42,5 +43,9 @@ class MainPageActionCreator {
 
   static Action onProgress(dynamic args) {
     return Action(MainPageAction.progress, payload: args);
+  }
+
+  static Action onReveive(dynamic args) {
+    return Action(MainPageAction.reveive, payload: args);
   }
 }

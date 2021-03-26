@@ -20,7 +20,16 @@ Widget buildView(MainPageState state, Dispatch dispatch, ViewService viewService
     Widget title = Text(model.title, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal));
     title = GestureDetector(
       onTap: () {
-        Navigator.of(viewService.context).push(PopUpRoute(DetailPage().buildPage(null)));
+        Navigator.of(viewService.context).push(
+          PopUpRoute(DetailPage().buildPage({
+            'music': state.currentMusic,
+            'player': state.player,
+            'isPlaying': state.isPlaying,
+            'progress': state.progress,
+            'duration': state.duration,
+            'musics': state.musics,
+          })),
+        );
       },
       child: title,
     );
@@ -34,7 +43,11 @@ Widget buildView(MainPageState state, Dispatch dispatch, ViewService viewService
 
     Widget pauseBtn = state.player.isPlaying ? Icon(Icons.pause) : Icon(Icons.play_arrow);
     pauseBtn = GestureDetector(
-      onTap: () => state.player.isPlaying ? dispatch(MainPageActionCreator.onPause()) : dispatch(MainPageActionCreator.onResume()),
+      onTap: () => state.player.isPlaying
+          ? dispatch(MainPageActionCreator.onPause())
+          : state.player.isPaused
+              ? dispatch(MainPageActionCreator.onResume())
+              : dispatch(MainPageActionCreator.onSelect(state.currentMusic)),
       child: pauseBtn,
     );
 

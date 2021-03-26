@@ -8,6 +8,7 @@ Effect<MainPageState> buildEffect() {
     Lifecycle.dispose: _onDispose,
     MainPageAction.select: _onSelect,
     MainPageAction.next: _onNext,
+    MainPageAction.reveive: _onReveive,
   });
 }
 
@@ -23,7 +24,7 @@ _onInit(Action action, Context<MainPageState> ctx) async {
   await ctx.state.player.openAudioSession();
   await ctx.state.player.setSubscriptionDuration(Duration(milliseconds: 1));
   ctx.state.subScriptionProgress = ctx.state.player.onProgress.listen((event) {
-    if (ctx.state.isPlaying == false) return;
+    if (ctx.state.player.isPlaying == false) return;
     ctx.dispatch(MainPageActionCreator.onProgress(event.position.inMilliseconds));
   });
 }
@@ -39,4 +40,8 @@ _onNext(Action action, Context<MainPageState> ctx) async {
   if (index + 1 > ctx.state.musics.length) return;
 
   ctx.dispatch(MainPageActionCreator.onSelect(ctx.state.musics[index + 1]));
+}
+
+_onReveive(Action action, Context<MainPageState> ctx) async {
+  ctx.dispatch(MainPageActionCreator.onPlay(action.payload));
 }
