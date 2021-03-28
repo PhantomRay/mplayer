@@ -22,7 +22,7 @@ Widget createApp() {
           _pageAnalyticsMiddleware<dynamic>(),
         ],
         middleware: <Middleware<dynamic>>[
-          logMiddleware<dynamic>(tag: page.runtimeType.toString()),
+          //logMiddleware<dynamic>(tag: page.runtimeType.toString()),
         ],
       );
     },
@@ -48,7 +48,7 @@ EffectMiddleware<T> _pageAnalyticsMiddleware<T>() {
     return (Effect<dynamic> effect) {
       return (Action action, Context<dynamic> ctx) {
         if (logic is Page<dynamic, dynamic> && action.type is Lifecycle) {
-          print('${logic.runtimeType} ${action.type.toString()} ');
+          //print('${logic.runtimeType} ${action.type.toString()} ');
         }
         return effect?.call(action, ctx);
       };

@@ -7,11 +7,12 @@ enum DetailPageAction {
   next,
   play,
   stop,
-  progress,
-  changeProgress,
   seekProgress,
-  drag,
   previous,
+  loading,
+  first,
+  last,
+  playCompleted,
 }
 
 class DetailPageActionCreator {
@@ -43,19 +44,23 @@ class DetailPageActionCreator {
     return const Action(DetailPageAction.stop);
   }
 
-  static Action onProgress(dynamic args) {
-    return Action(DetailPageAction.progress, payload: args);
-  }
-
-  static Action onChangeProgress(dynamic args) {
-    return Action(DetailPageAction.changeProgress, payload: args);
-  }
-
   static Action onSeekProgress(dynamic args) {
     return Action(DetailPageAction.seekProgress, payload: args);
   }
 
-  static Action onDrag(dynamic args) {
-    return Action(DetailPageAction.drag, payload: args);
+  static Action onLoading(dynamic args) {
+    return Action(DetailPageAction.loading, payload: args);
+  }
+
+  static Action onFirst(dynamic args) {
+    return Action(DetailPageAction.first, payload: args);
+  }
+
+  static Action onLast(dynamic args) {
+    return Action(DetailPageAction.last, payload: args);
+  }
+
+  static Action onPlayCompleted() {
+    return const Action(DetailPageAction.playCompleted);
   }
 }

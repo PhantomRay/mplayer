@@ -6,6 +6,7 @@ class PopUpRoute extends PageRouteBuilder {
       : super(
             transitionDuration: Duration(milliseconds: 300),
             opaque: false,
+            barrierColor: Colors.black38,
             pageBuilder: (
               BuildContext context,
               Animation<double> animation1,

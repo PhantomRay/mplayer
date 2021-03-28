@@ -8,8 +8,13 @@ enum MainPageAction {
   next,
   play,
   stop,
-  progress,
   reveive,
+  load,
+  search,
+  searching,
+  showClear,
+  clear,
+  toggle,
 }
 
 class MainPageActionCreator {
@@ -41,11 +46,31 @@ class MainPageActionCreator {
     return const Action(MainPageAction.stop);
   }
 
-  static Action onProgress(dynamic args) {
-    return Action(MainPageAction.progress, payload: args);
-  }
-
   static Action onReveive(dynamic args) {
     return Action(MainPageAction.reveive, payload: args);
+  }
+
+  static Action onLoad(dynamic args) {
+    return Action(MainPageAction.load, payload: args);
+  }
+
+  static Action onSearch() {
+    return Action(MainPageAction.search);
+  }
+
+  static Action onSearching() {
+    return Action(MainPageAction.searching);
+  }
+
+  static Action onShowClear() {
+    return Action(MainPageAction.showClear);
+  }
+
+  static Action onClear() {
+    return Action(MainPageAction.clear);
+  }
+
+  static Action onToggle(dynamic args) {
+    return Action(MainPageAction.toggle, payload: args);
   }
 }

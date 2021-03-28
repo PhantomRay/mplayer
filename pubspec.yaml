@@ -32,16 +32,15 @@ dependencies:
     git:
       url: https://github.com/alibaba/fish-redux.git      
       ref: 157df769d5719053f25a288ff57af55f99d617e1
-  flutter_sound:
-    git:
-      url: https://github.com/Canardoux/tau.git
-      path: flutter_sound
-      ref: 40f658ab1b08289f5eb4ed5807f2ca30ea73fa8a
+  
+  flutter_sound_lite: 8.0.0+6
 
   percent_indicator: 3.0.1
-  
+  dio: 3.0.10
 
 dev_dependencies:
+  test: 1.16.0
+
   flutter_test:
     sdk: flutter
 
@@ -57,9 +56,9 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/disc.png
+    
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

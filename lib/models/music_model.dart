@@ -1,9 +1,8 @@
 class MusicModel {
-  String id;
+  int id;
   String title;
   String artist;
-  String album;
-  String albumArt;
+  String artwork;
   String url;
 
   static MusicModel fromJson(Map<String, dynamic> json) {
@@ -11,13 +10,20 @@ class MusicModel {
 
     MusicModel model = MusicModel();
 
-    model.id = json['id'];
-    model.title = json['title'];
-    model.artist = json['artist'];
-    model.album = json['album'];
-    model.albumArt = json['album_art'];
-    model.url = json['url'];
+    model.id = json['trackId'];
+    model.title = json['trackName'];
+    model.artist = json['artistName'];
+    model.artwork = json['artworkUrl100'];
+    model.url = json['previewUrl'];
 
     return model;
+  }
+
+  static List<MusicModel> fromMapList(dynamic mapList) {
+    List<MusicModel> models = [];
+
+    for (dynamic map in mapList) models.add(fromJson(map));
+
+    return models;
   }
 }

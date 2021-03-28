@@ -1,10 +1,11 @@
 import 'package:fish_redux/fish_redux.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:percent_indicator/percent_indicator.dart';
-import 'package:player/components/water_ripple.dart';
-import 'package:player/models/music_model.dart';
-import 'package:player/services/route_animation.dart';
-import 'package:player/views/detail/page.dart';
+import '../../components/water_ripple.dart';
+import '../../models/music_model.dart';
+import '../../services/route_animation.dart';
+import '../../views/detail/page.dart';
+import '../../views/main/progress.dart';
 import 'action.dart';
 import 'state.dart';
 
@@ -14,17 +15,33 @@ Widget buildView(MainPageState state, Dispatch dispatch, ViewService viewService
 
     MusicModel model = state.currentMusic;
 
-    Widget image = ClipRRect(borderRadius: BorderRadius.circular(999), child: Image.network(model.albumArt));
+    Widget image = ClipRRect(borderRadius: BorderRadius.circular(999), child: Image.network(model.artwork, fit: BoxFit.cover));
     image = Container(width: 60, height: 60, child: image);
+    image = GestureDetector(
+        onTap: () {
+          Navigator.of(viewService.context).push(
+            PopUpRoute(DetailPage().buildPage({
+              'music': state.currentMusic,
+              'player': state.player,
+              'isPlaying': state.player.isPlaying,
+              'progress': state.progress,
+              'duration': state.duration,
+              'musics': state.musics,
+            })),
+          );
+        },
+        child: image);
 
     Widget title = Text(model.title, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal));
+    title = Container(height: 60, child: title, color: Colors.transparent, alignment: Alignment.centerLeft);
+
     title = GestureDetector(
       onTap: () {
         Navigator.of(viewService.context).push(
           PopUpRoute(DetailPage().buildPage({
             'music': state.currentMusic,
             'player': state.player,
-            'isPlaying': state.isPlaying,
+            'isPlaying': state.player.isPlaying,
             'progress': state.progress,
             'duration': state.duration,
             'musics': state.musics,
@@ -43,11 +60,17 @@ Widget buildView(MainPageState state, Dispatch dispatch, ViewService viewService
 
     Widget pauseBtn = state.player.isPlaying ? Icon(Icons.pause) : Icon(Icons.play_arrow);
     pauseBtn = GestureDetector(
-      onTap: () => state.player.isPlaying
-          ? dispatch(MainPageActionCreator.onPause())
+      onTap: state.player.isPlaying
+          ? () async {
+              await state.player.pausePlayer();
+              dispatch(MainPageActionCreator.onPause());
+            }
           : state.player.isPaused
-              ? dispatch(MainPageActionCreator.onResume())
-              : dispatch(MainPageActionCreator.onSelect(state.currentMusic)),
+              ? () async {
+                  await state.player.resumePlayer();
+                  dispatch(MainPageActionCreator.onResume());
+                }
+              : () => dispatch(MainPageActionCreator.onSelect(state.currentMusic)),
       child: pauseBtn,
     );
 
@@ -58,7 +81,7 @@ Widget buildView(MainPageState state, Dispatch dispatch, ViewService viewService
         SizedBox(width: 10),
         Expanded(child: title),
         pauseBtn,
-        SizedBox(width: 10),
+        SizedBox(width: 15),
         nextBtn,
       ],
     );
@@ -71,13 +94,7 @@ Widget buildView(MainPageState state, Dispatch dispatch, ViewService viewService
 
     current = Column(
       children: [
-        LinearPercentIndicator(
-          padding: EdgeInsets.zero,
-          lineHeight: 2.0,
-          percent: state.duration == 0 ? 0.0 : state.progress / state.duration,
-          progressColor: Colors.blue,
-          backgroundColor: Color(0xffeeeeee).withOpacity(0.95),
-        ),
+        Progress(player: state.player, duration: state.duration),
         current,
       ],
     );
@@ -88,6 +105,7 @@ Widget buildView(MainPageState state, Dispatch dispatch, ViewService viewService
   Widget _searchInput() {
     Widget current = TextField(
       style: TextStyle(color: Colors.black),
+      controller: state.txtController,
       cursorColor: Colors.blue,
       maxLength: 100,
       maxLines: 1,
@@ -97,8 +115,25 @@ Widget buildView(MainPageState state, Dispatch dispatch, ViewService viewService
         hintText: 'In Apple Music',
         hintStyle: TextStyle(color: Colors.grey[500]),
         border: InputBorder.none,
-        contentPadding: EdgeInsets.only(left: 5, top: 6, right: 5, bottom: 6),
+        contentPadding: EdgeInsets.only(left: 10, top: 10, right: 5, bottom: 10),
       ),
+    );
+
+    current = Row(
+      children: [
+        Expanded(child: current),
+        state.showClearIcon
+            ? GestureDetector(
+                onTap: () => dispatch(MainPageActionCreator.onClear()),
+                child: Container(
+                  decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
+                  padding: EdgeInsets.all(2),
+                  margin: EdgeInsets.only(right: 5),
+                  child: Icon(Icons.clear, color: Colors.white, size: 12),
+                ),
+              )
+            : SizedBox(),
+      ],
     );
 
     current = Container(
@@ -116,7 +151,7 @@ Widget buildView(MainPageState state, Dispatch dispatch, ViewService viewService
           Expanded(child: current),
           SizedBox(width: 5),
           GestureDetector(
-            onTap: () {},
+            onTap: () => dispatch(MainPageActionCreator.onSearch()),
             child: Icon(Icons.search, color: Colors.grey[500]),
           ),
           SizedBox(width: 10),
@@ -138,22 +173,47 @@ Widget buildView(MainPageState state, Dispatch dispatch, ViewService viewService
     ),
     body: Stack(
       children: [
-        Column(
-          children: [
-            Divider(height: 0.1),
-            Expanded(
-              child: ListView.separated(
-                  padding: EdgeInsets.only(bottom: 100),
-                  itemBuilder: (context, index) => GestureDetector(
-                        onTap: () => dispatch(MainPageActionCreator.onSelect(state.musics[index])),
-                        child: MusicSummary(music: state.musics[index], selected: state.musics[index].id == state.currentMusic?.id && state.isPlaying),
+        state.searching
+            ? Center(child: CupertinoActivityIndicator(radius: 15))
+            : state.musics.length == 0
+                ? Center(child: Text('Not Found', style: TextStyle(color: Colors.grey, fontSize: 16)))
+                : Column(
+                    children: [
+                      Divider(height: 0.1),
+                      Expanded(
+                        child: ListView.separated(
+                            padding: EdgeInsets.only(bottom: 100),
+                            itemBuilder: (context, index) => GestureDetector(
+                                  onTap: () => dispatch(MainPageActionCreator.onSelect(state.musics[index])),
+                                  child: MusicSummary(
+                                    music: state.musics[index],
+                                    selected: state.musics[index].id == state.currentMusic?.id,
+                                    isPlaying: state.isPlaying || state.player.isPaused,
+                                  ),
+                                ),
+                            separatorBuilder: (context, index) => Divider(height: 0.5, indent: 15, endIndent: 15),
+                            itemCount: state.musics.length),
                       ),
-                  separatorBuilder: (context, index) => Divider(height: 0.5, indent: 15, endIndent: 15),
-                  itemCount: state.musics.length),
-            ),
-          ],
+                    ],
+                  ),
+        Positioned(
+          left: 0,
+          bottom: 0,
+          right: 0,
+          child: AnimatedSwitcher(
+            duration: Duration(milliseconds: 500),
+            transitionBuilder: (Widget child, Animation<double> animation) {
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: Offset(0.0, 1.0),
+                  end: Offset(0.0, 0.0),
+                ).animate(CurvedAnimation(parent: animation, curve: Curves.fastOutSlowIn)),
+                child: child,
+              );
+            },
+            child: _bottomController(),
+          ),
         ),
-        Positioned(left: 0, bottom: 0, right: 0, child: _bottomController()),
       ],
     ),
   );
@@ -162,13 +222,14 @@ Widget buildView(MainPageState state, Dispatch dispatch, ViewService viewService
 class MusicSummary extends StatelessWidget {
   final MusicModel music;
   final bool selected;
-  const MusicSummary({Key key, @required this.music, @required this.selected}) : super(key: key);
+  final bool isPlaying;
+  const MusicSummary({Key key, @required this.music, @required this.selected, @required this.isPlaying}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     Widget image = ClipRRect(
       borderRadius: BorderRadius.circular(10),
-      child: Image.network(music.albumArt),
+      child: Image.network(music.artwork, fit: BoxFit.cover),
     );
 
     image = Container(
@@ -180,11 +241,9 @@ class MusicSummary extends StatelessWidget {
     Widget center = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(music.title, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal)),
+        Text(music.title ?? '', overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal)),
         SizedBox(height: 3),
-        Text(music.artist, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.black45)),
-        SizedBox(height: 3),
-        Text(music.album, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: Colors.black45)),
+        Text(music.artist ?? '', overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.black45)),
       ],
     );
 
@@ -192,12 +251,14 @@ class MusicSummary extends StatelessWidget {
         ? Container(
             height: 40,
             width: 40,
-            child: Stack(
-              children: [
-                Container(child: WaterRipple(), width: 40, height: 40),
-                Center(child: Icon(Icons.music_note, size: 12, color: Colors.white)),
-              ],
-            ),
+            child: isPlaying
+                ? Stack(
+                    children: [
+                      Container(child: WaterRipple(), width: 40, height: 40),
+                      Center(child: Icon(Icons.music_note, size: 12, color: Colors.white)),
+                    ],
+                  )
+                : CupertinoActivityIndicator(),
           )
         : SizedBox();
 
