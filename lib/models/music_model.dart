@@ -3,6 +3,7 @@ class MusicModel {
   String title;
   String artist;
   String artwork;
+  String album;
   String url;
 
   static MusicModel fromJson(Map<String, dynamic> json) {
@@ -15,6 +16,7 @@ class MusicModel {
     model.artist = json['artistName'];
     model.artwork = json['artworkUrl100'];
     model.url = json['previewUrl'];
+    model.album = json['collectionName'];
 
     return model;
   }

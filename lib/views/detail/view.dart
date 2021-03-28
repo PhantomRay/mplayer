@@ -96,6 +96,16 @@ Widget buildView(DetailPageState state, Dispatch dispatch, ViewService viewServi
                 ),
                 SizedBox(height: 10),
                 Container(
+                  alignment: Alignment.centerLeft,
+                  padding: EdgeInsets.symmetric(horizontal: 30),
+                  child: Text(
+                    state.detail.album,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 16, color: Colors.grey, fontWeight: FontWeight.w400),
+                  ),
+                ),
+                SizedBox(height: 10),
+                Container(
                   padding: EdgeInsets.only(left: 30, top: 20, right: 20, bottom: 10),
                   child: SliderTheme(
                     data: SliderThemeData(

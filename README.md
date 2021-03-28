@@ -1,5 +1,9 @@
 # Music player
 
+
+![Watch the demo](output.gif)
+
+
 ## Compatibility
 App has been tested in the following environments.
 * Android min SDK 26, target SDK 29
